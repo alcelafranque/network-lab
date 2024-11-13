@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source /usr/lib/frr/frrcommon.sh
+/usr/lib/frr/watchfrr  --min-restart-interval 3600 --min-restart-interval 7200 $(daemon_list)
+
