@@ -58,38 +58,12 @@ ip addr add 10.0.110.1/24 dev l2vni110
 ip link set l2vni110 master vrf1
 sysctl -qw net.ipv4.conf.l2vni110.forwarding=1
 
-ip link add name l2vni120 link br0 type vlan id 120 protocol 802.1q
-bridge vlan add vid 120 dev br0 self
-ip link set l2vni120 up
-ip addr add 10.0.120.1/24 dev l2vni120
-ip link set l2vni120 master vrf1
-sysctl -qw net.ipv4.conf.l2vni120.forwarding=1
-
-ip link add name l2vni220 link br0 type vlan id 220 protocol 802.1q
-bridge vlan add vid 220 dev br0 self
-ip link set l2vni220 up
-ip addr add 10.0.220.1/24 dev l2vni220
-ip link set l2vni220 master vrf2
-sysctl -qw net.ipv4.conf.l2vni220.forwarding=1
-
 # add VNI / VLAN table
 bridge vni add dev vx0 vni 110 
 bridge vlan add dev vx0 vid 110 master
 bridge vlan add dev vx0 vid 110 tunnel_info id 110 master
 
-bridge vni add dev vx0 vni 120
-bridge vlan add dev vx0 vid 120 master
-bridge vlan add dev vx0 vid 120 tunnel_info id 120 master
-
-bridge vni add dev vx0 vni 220
-bridge vlan add dev vx0 vid 220 master
-bridge vlan add dev vx0 vid 220 tunnel_info id 220 master
-
 # LB1
 ip link set eth2 master br0
 bridge vlan add dev eth2 vid 110 master pvid untagged
-
-# PC1
-ip link set eth3 master br0
-bridge vlan add dev eth3 vid 120 master pvid untagged
 
