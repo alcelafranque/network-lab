@@ -1,0 +1,34 @@
+---
+name: CI
+on:
+  push:
+    branches: main
+  schedule:
+    - cron: 5 8 * * 0
+jobs:
+  docker:
+    name: 🐋 Build and Push Container Image for frr with debug symbols
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: tips/build-frr-with-debug-symbol
+          file: Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/frr-debugsym:latest
+
