@@ -28,7 +28,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: tips/build-frr-with-debug-symbol
-          file: Dockerfile
+          file: tips/build-frr-with-debug-symbol/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/${{ github.repository }}/frr-debugsym:latest
 
