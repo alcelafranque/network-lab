@@ -23,6 +23,7 @@ sysctl -qw net.ipv6.conf.vx0.forwarding=1
 
 sysctl -qw net.ipv4.conf.br0.forwarding=1
 sysctl -qw net.ipv6.conf.br0.forwarding=1
+sysctl -qw net.ipv6.conf.all.forwarding=1
 
 while read vrf table; do
     ip link add $vrf type vrf table $table
@@ -42,15 +43,18 @@ red 200
 blue 300
 EOF
 
-while read iface local_ip vrf nei_ip; do
+while read iface local_ip local_ip6 vrf nei_ip nei_ip6; do
     ip link set $iface up
     ip link set $iface master $vrf
     ip addr add $local_ip dev $iface
+    ip -6 addr add $local_ip6 dev $iface
     ip route add $nei_ip dev $iface proto static vrf $vrf
+    ip -6 route add $nei_ip6 dev $iface proto static vrf $vrf
     sysctl -qw net.ipv4.conf.$iface.forwarding=1
+    sysctl -qw net.ipv6.conf.$iface.forwarding=1
 done <<EOF
-eth2 10.1.0.1/32 purple 10.1.0.2/32
-eth3 10.2.0.1/32 red 10.2.0.2/32
-eth4 10.3.0.1/32 blue 10.3.0.2/32 
+eth2 10.1.0.1/32 2001:db8:1::/128 purple 10.1.0.2/32 2001:db8:1::2/128
+eth3 10.2.0.1/32 2001:db8:2::/128 red 10.2.0.2/32 2001:db8:2::2/128
+eth4 10.3.0.1/32 2001:db8:3::/128 blue 10.3.0.2/32 2001:db8:3::2/128
 EOF
 
