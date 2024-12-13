@@ -1,0 +1,43 @@
+name: frr-evpn-vxlan-type-5-onlink
+
+topology:
+  nodes:
+    R1:
+      kind: linux
+      image: quay.io/frrouting/frr:10.1.1
+      binds:
+        - R1/daemons:/etc/frr/daemons
+        - R1/frr.conf:/etc/frr/frr.conf
+        - R1/setup.sh:/setup.sh
+    R2:
+      kind: linux
+      image: quay.io/frrouting/frr:10.1.1
+      binds:
+        - R2/daemons:/etc/frr/daemons
+        - R2/frr.conf:/etc/frr/frr.conf
+        - R2/setup.sh:/setup.sh
+    LB1:
+      kind: linux
+      image: quay.io/frrouting/frr:10.1.1
+      binds:
+        - LB1/daemons:/etc/frr/daemons
+        - LB1/frr.conf:/etc/frr/frr.conf
+        - LB1/setup.sh:/setup.sh
+    PC1:
+      kind: linux
+      image: praqma/network-multitool:latest
+    PC2:
+      kind: linux
+      image: praqma/network-multitool:latest
+    PC3:
+      kind: linux
+      image: praqma/network-multitool:latest
+
+
+  links:
+    - endpoints: ["R1:eth1", "R2:eth1"]
+    - endpoints: ["LB1:eth1", "R1:eth2"]
+    - endpoints: ["R1:eth3", "PC1:eth1"]
+    - endpoints: ["R1:eth4", "PC2:eth1"]
+    - endpoints: ["R2:eth3", "PC3:eth1"]
+
