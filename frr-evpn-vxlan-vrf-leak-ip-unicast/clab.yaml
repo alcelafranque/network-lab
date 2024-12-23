@@ -1,4 +1,4 @@
-name: frr01
+name: frr-evpn-vxlan-vrf-leak-ip-unicast
 
 topology:
   nodes:

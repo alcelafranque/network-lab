@@ -21,43 +21,39 @@ ip link set vx0 up
 sysctl -qw net.ipv4.conf.vx0.forwarding=1
 sysctl -qw net.ipv6.conf.vx0.forwarding=1
 
-
 # L3 VRF
-ip link add vrf1 type vrf table 100
-ip link add vrf2 type vrf table 200
-ip link set up vrf1
-ip link set up vrf2
+while read vrf table; do
+    ip link add $vrf type vrf table $table
+    ip link set $vrf up
+    ip link add name l3vni$table link br0 type vlan id $table protocol 802.1q
+    bridge vlan add vid $table dev br0 self
+    ip link set l3vni$table up
+    ip link set l3vni$table master $vrf
+    bridge vni add dev vx0 vni $table
+    bridge vlan add dev vx0 vid $table master
+    bridge vlan add dev vx0 vid $table tunnel_info id $table master
+    sysctl -qw net.ipv4.conf.l3vni$table.forwarding=1
+    sysctl -qw net.ipv6.conf.l3vni$table.forwarding=1
+done <<EOF
+vrf1 100
+vrf2 200
+EOF
 
-ip link add name l3vni100 link br0 type vlan id 100 protocol 802.1q
-ip link add name l3vni200 link br0 type vlan id 200 protocol 802.1q
-bridge vlan add vid 100 dev br0 self
-bridge vlan add vid 200 dev br0 self
-ip link set l3vni100 up
-ip link set l3vni100 master vrf1
-ip link set l3vni200 up
-ip link set l3vni200 master vrf2
-bridge vni add dev vx0 vni 100
-bridge vni add dev vx0 vni 200
-bridge vlan add dev vx0 vid 100 master
-bridge vlan add dev vx0 vid 100 tunnel_info id 100 master
-bridge vlan add dev vx0 vid 200 master
-bridge vlan add dev vx0 vid 200 tunnel_info id 200 master
-
-sysctl -qw net.ipv4.conf.l3vni100.forwarding=1
-sysctl -qw net.ipv6.conf.l3vni100.forwarding=1
-sysctl -qw net.ipv4.conf.l3vni200.forwarding=1
-sysctl -qw net.ipv6.conf.l3vni200.forwarding=1
-
-# L2 VNI 
-ip link add name l2vni110 link br0 type vlan id 110 protocol 802.1q
-bridge vlan add vid 110 dev br0 self
-ip link set l2vni110 up
-ip addr add 10.0.110.1/24 dev l2vni110
-ip link set l2vni110 master vrf1
-sysctl -qw net.ipv4.conf.l2vni110.forwarding=1
+while read local_ip local_ip6 vrf vni; do
+# L2 VNI
+ip link add name l2vni$vni link br0 type vlan id $vni protocol 802.1q
+bridge vlan add vid $vni dev br0 self
+ip link set l2vni$vni up
+ip addr add $local_ip dev l2vni$vni
+ip -6 addr add $local_ip6 dev l2vni$vni
+ip link set l2vni$vni master $vrf
+sysctl -qw net.ipv4.conf.l2vni$vni.forwarding=1
 
 # add VNI / VLAN table
-bridge vni add dev vx0 vni 110 
-bridge vlan add dev vx0 vid 110 master
-bridge vlan add dev vx0 vid 110 tunnel_info id 110 master
+bridge vni add dev vx0 vni $vni
+bridge vlan add dev vx0 vid $vni master
+bridge vlan add dev vx0 vid $vni tunnel_info id $vni master
 
+done <<EOF
+10.0.110.1/24 2001:db8:110::/64 vrf1 110
+EOF
