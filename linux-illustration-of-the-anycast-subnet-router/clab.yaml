@@ -1,0 +1,13 @@
+name: linux-illustration-of-the-anycast-subnet-router
+
+topology:
+  nodes:
+    PC1:
+      kind: linux
+      image: praqma/network-multitool:latest
+    PC2:
+      kind: linux
+      image: praqma/network-multitool:latest
+
+  links:
+    - endpoints: ["PC1:eth1", "PC2:eth1"]
