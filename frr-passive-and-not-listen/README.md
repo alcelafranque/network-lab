@@ -1,4 +1,4 @@
-# FRR BGP/BFD WITH ONE PASSIVE PEER AND ANOTHER PEER DONT LISTEN BGP
+# FRR BGP/BFD with a passive peer and a peer that does not listen on port 179
 
 In this lab, we have a router configured in peer-group mode on an IPv6 subnet. 
 On the other side, we have a load balancer configured not to listen,on 
