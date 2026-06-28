@@ -1,0 +1,46 @@
+name: frr-evpn-hub-spoke-firewall
+
+topology:
+  nodes:
+    spine:
+      kind: linux
+      image: quay.io/frrouting/frr:10.6.1
+      binds:
+        - spine/daemons:/etc/frr/daemons
+        - spine/frr.conf:/etc/frr/frr.conf
+        - spine/setup.sh:/setup.sh
+    fw:
+      kind: linux
+      image: quay.io/frrouting/frr:10.6.1
+      binds:
+        - fw/daemons:/etc/frr/daemons
+        - fw/frr.conf:/etc/frr/frr.conf
+        - fw/setup.sh:/setup.sh
+    r1:
+      kind: linux
+      image: quay.io/frrouting/frr:10.6.1
+      binds:
+        - r1/daemons:/etc/frr/daemons
+        - r1/frr.conf:/etc/frr/frr.conf
+        - r1/setup.sh:/setup.sh
+    r2:
+      kind: linux
+      image: quay.io/frrouting/frr:10.6.1
+      binds:
+        - r2/daemons:/etc/frr/daemons
+        - r2/frr.conf:/etc/frr/frr.conf
+        - r2/setup.sh:/setup.sh
+    pc-a:
+      kind: linux
+      image: praqma/network-multitool:latest
+    pc-b:
+      kind: linux
+      image: praqma/network-multitool:latest
+
+  links:
+    - endpoints: ["spine:eth1", "fw:eth1"]    # HUBSVC unicast handoff (per-VRF unicast)
+    - endpoints: ["spine:eth2", "r1:eth1"]    # underlay + EVPN
+    - endpoints: ["spine:eth3", "r2:eth1"]    # underlay + EVPN
+    - endpoints: ["spine:eth4", "fw:eth2"]    # SPKSVC unicast handoff (per-VRF unicast)
+    - endpoints: ["r1:eth2", "pc-a:eth1"]
+    - endpoints: ["r2:eth2", "pc-b:eth1"]
